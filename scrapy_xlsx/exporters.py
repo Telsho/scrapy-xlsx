@@ -12,6 +12,7 @@ class XlsxItemExporter(BaseItemExporter):
         include_header_row=True,
         join_multivalued=",",
         default_value=None,
+        headers=None,  # Add custom headers parameter
         **kwargs
     ):
         self._configure(kwargs, dont_fail=True)
@@ -21,6 +22,7 @@ class XlsxItemExporter(BaseItemExporter):
         self._join_multivalued = join_multivalued
         self.default_value = default_value
         self._headers_not_written = True
+        self.custom_headers = headers or {}  # Initialize custom headers
 
         self.workbook = Workbook(write_only=True)
         self.sheet = self.workbook.create_sheet()
@@ -94,5 +96,6 @@ class XlsxItemExporter(BaseItemExporter):
                 self.fields_to_export = list(item.fields.keys())
 
         if self.include_header_row:
-            row = list(self.fields_to_export)
+            # Use custom headers if provided, otherwise use field names
+            row = [self.custom_headers.get(field, field) for field in self.fields_to_export]
             self.sheet.append(row)
