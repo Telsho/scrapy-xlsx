@@ -78,21 +78,21 @@ class XlsxItemExporter(BaseItemExporter):
 
     def _write_headers_and_set_fields_to_export(self, item):
         """
-        Write the header row using the field names of the first item.
-
-        This method writes the header row using the field names of the first
-        exported item. This works fine with scrapy.Item objects because they
-        provide a formal schema definition, but you need to be careful when
-        using dictionaries that may omit some fields. It is recommended to
-        set fields_to_export when using dictionaries to avoid omitting fields
-        accidentally.
+        Write headers using the dictionary values from fields_to_export.
         """
+        # Set fields_to_export from the dictionary keys if not already set
         if self.fields_to_export is None:
             if isinstance(item, dict):
                 self.fields_to_export = list(item.keys())
             else:
                 self.fields_to_export = list(item.fields.keys())
 
-        if self.include_header_row:
-            row = list(self.fields_to_export)
-            self.sheet.append(row)
+        # Use dictionary VALUES as headers if available
+        if self.include_header_row and not self._headers_not_written:
+            if isinstance(self.fields_to_export, dict):  # Check if it's a dictionary
+                header_row = list(self.fields_to_export.values())
+            else:  # Fallback to normal list behavior
+                header_row = list(self.fields_to_export)
+                
+            self.sheet.append(header_row)
+            self._headers_written = True
